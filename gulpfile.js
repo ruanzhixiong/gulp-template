@@ -14,6 +14,7 @@ var gulp = require('gulp'),
     connect = require('gulp-connect'), //服务
     livereload = require('gulp-livereload'),
     rev = require('gulp-rev-append'), //添加版本号
+    fileinclude = require('gulp-file-include'), //提取公共部分
     autoprefixer = require('gulp-autoprefixer'); //自动补全css前缀
 
 // 压缩js文件，并重命名
@@ -50,27 +51,19 @@ gulp.task('image', done => {
 
 // 压缩html文件
 gulp.task('minifyhtml', done => {
-    gulp.src('src/html/*.html') // 要压缩的html文件
+    gulp.src(['src/**/*.html', '!src/template/*.html']) // 要压缩的html文件
         .pipe(rev())
-        .pipe(connect.reload())
+        .pipe(fileinclude({
+            prefix: '@@',
+        }))
         .pipe(minifyHtml()) //压缩
-        .pipe(gulp.dest('dist/html'));
-    done()
-});
-
-// 压缩html文件
-gulp.task('minifyindex', done => {
-    gulp.src('index.html') // 要压缩的html文件
-        .pipe(rev())
-        .pipe(connect.reload())
-        .pipe(minifyHtml()) //压缩
-        .pipe(gulp.dest('dist'))
+        .pipe(gulp.dest('dist/'));
     done()
 });
 
 // 拷贝静态文件按
 gulp.task('copy', done => {
-    gulp.src('static/**/*')
+    gulp.src('src/static/**/*')
         .pipe(gulp.dest('dist/static'))
     done()
 });
@@ -80,13 +73,13 @@ gulp.task('webserver', function () {
     connect.server({
         livereload: true,
         port: 8095,
-        // root:'src'
+        root:'dist'
     });
 });
 
 
 // 默认任务
-gulp.task('default', gulp.parallel('webserver', 'minifyjs', 'minifycss', 'image', 'minifyhtml', 'minifyindex', 'copy', done => {
+gulp.task('default', gulp.series('minifyhtml',  'minifyjs', 'minifycss', 'image', 'copy', 'webserver',done => {
     console.log('hello world');
     done();
 }));
