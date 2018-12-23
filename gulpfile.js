@@ -73,7 +73,7 @@ gulp.task('webserver', function () {
     connect.server({
         livereload: true,
         port: 8095,
-        root:'dist'
+        root:'src'
     });
 });
 
